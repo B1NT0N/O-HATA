@@ -129,14 +129,6 @@ def main(page):
                             ),
                             
                         ),
-
-                        # content = ft.ListTile(
-                        #     leading=ft.Icon(ft.icons.ALBUM),
-                        #     title=ft.Text("The Enchanted Nightingale"),
-                        #     subtitle=ft.Text(
-                        #         "Music by Julie Gable. Lyrics by Sidney Stein."
-                        #     ),
-                        # ),
                         
                     ),
                     ft.Container(
@@ -186,14 +178,6 @@ def main(page):
                             
                         ),
 
-                        # content = ft.ListTile(
-                        #     leading=ft.Icon(ft.icons.ALBUM),
-                        #     title=ft.Text("The Enchanted Nightingale"),
-                        #     subtitle=ft.Text(
-                        #         "Music by Julie Gable. Lyrics by Sidney Stein."
-                        #     ),
-                        # ),
-                        
                     ),
 
                     ft.Container(
