@@ -96,7 +96,7 @@ def main(page):
                         else:
                             K_factors = calculate_correction_factors()
                             loss = 46.30+33.90*math.log(f)-13.82*math.log(b_h) + \
-                                (44.90-6.55*math.log(b_h))*math.log(d) + K_factors
+                                (44.90-6.55*math.log(b_h))*math.log(d) - K_factors
                             t.value = f"Total Loss = {loss:.3f} dB"
                             
                             
