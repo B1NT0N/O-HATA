@@ -9,27 +9,118 @@ def main(page):
     page.window_min_width = 600       # window's height is 200 px
     # page.window_resizable = True  # window is not resizable
 
-    t = ft.Text()
+    t = ft.Text(theme_style=ft.TextThemeStyle.DISPLAY_SMALL, weight=ft.FontWeight.BOLD,color=ft.colors.GREEN_200,)
     frequency = ft.Ref[ft.TextField]()
     distance = ft.Ref[ft.TextField]()
     mobile_height = ft.Ref[ft.TextField]()
     base_height= ft.Ref[ft.TextField]()
+    
+    k_ac = ft.Ref[ft.Checkbox]()
+    k_al = ft.Ref[ft.Checkbox]()
+    k_th = ft.Ref[ft.Checkbox]()
+    k_hp = ft.Ref[ft.Checkbox]()
+    k_ih = ft.Ref[ft.Checkbox]()
+    
+    area_type = ft.Ref[ft.Dropdown]()
+    city_type = ft.Ref[ft.Dropdown]()
+    
+
+    def calculate_correction_factors():
+        d = float(distance.current.value)
+        f = float(frequency.current.value)
+        m_h = float(mobile_height.current.value)
+        b_h = float(base_height.current.value)
+        d_h = b_h-m_h
+        
+        value_k_ac = -2.1*math.log(d) -6.3 if k_ac.current.value == True else 0
+        
+        if k_al.current.value != True:
+            value_k_al = -2.7*math.log(d)+8.6 if d <= 40 else -2.7*math.log(d)+10.7
+        else:
+            value_k_al = 0
+            
+        value_k_th = -3*(math.log(d_h))**2-0.5*math.log(d_h)+4.5 if k_th.current.value == True else 0
+        
+        value_k_hp =  -2*(math.log(d_h))**2+16*math.log(d_h)-12 if k_hp.current.value == True else 0
+        
+        value_k_su = 2*(math.log(f/28))**2 + 5.40 if area_type.current.value == "Suburbs" else 0
+        
+        value_k_oa = 4.78*(math.log(f))**2 -8.33*math.log(f) + 40.9 if area_type.current.value == "Open Area" else 0
+        
+        value_k_qo = (4.78*(math.log(f))**2 -8.33*math.log(f) + 40.9) - 5 if area_type.current.value == "Semi-Open Area" else 0
+        
+        if city_type.current.value == "Medium City":
+            c=0
+        elif city_type.current.value == "City Center":
+            c = 3
+        else:
+            c=0
+            
+        if city_type.current.value == "Medium City":
+            H_mu = (1.10*math.log(f)-0.7)*m_h -(1.56*math.log(f)-0.8)
+        elif city_type.current.value == "City Center" and f>=400:
+            H_mu = 3.2*(math.log(11.75*m_h))**2-4.97
+        elif f<200:
+            H_mu = 8.29*(math.log(1.54*m_h))**2-1.10
+        else:
+            H_mu = 0
+        
+        
+        
+        k_sum = value_k_ac + value_k_al + value_k_th + value_k_hp + value_k_su + value_k_oa + value_k_qo + c - H_mu
+        
+        return k_sum
 
     def calculate(e):
-        print(frequency.current.value)
-        # freq = float(frequency.current.value)
-        # dist = float(distance.current.value)
-        # hgt = float(height.current.value)
         
-        c = 0
-        h = 0
-        ksum = 0
-        # loss = 46.30+33.90*math.log(freq)-13.82*math.log(hgt) + \
-        #     (44.90-6.55*math.log(hgt))*math.log(dist)-h+c+ksum
-        loss = 0
+        K_factors = 0
+        
+        if frequency.current.value != "" and distance.current.value != "" and base_height.current.value != "" and mobile_height.current.value != "" :
+            
+            objects = [frequency.current, distance.current, base_height.current, mobile_height.current]
 
-        t.value = f"{loss}"
-        page.update()
+            for obj in objects:
+                obj.error_text = ""
+                
+            if (float(frequency.current.value) >= 150 and float(frequency.current.value) <= 2000) != True:
+                frequency.current.error_text = "Not in Range"
+            else:
+                if (float(distance.current.value) >= 1 and float(distance.current.value) <= 20) != True:
+                    distance.current.error_text = "Not in Range"
+                else:
+                    if (float(base_height.current.value) >= 30 and float(base_height.current.value) <= 1000) != True:
+                        base_height.current.error_text = "Not in Range"
+                    else:
+                        if (float(mobile_height.current.value) >= 1 and float(mobile_height.current.value) <= 10) != True:
+                            mobile_height.current.error_text = "Not in Range"
+                        else:
+                            K_factors = calculate_correction_factors()
+                            
+                            
+                            for obj in objects:
+                                obj.error_text = ""
+                            
+            d = float(distance.current.value)
+            f = float(frequency.current.value)
+            m_h = float(mobile_height.current.value)
+            b_h = float(base_height.current.value)
+            
+            loss = 46.30+33.90*math.log(f)-13.82*math.log(b_h) + \
+                (44.90-6.55*math.log(b_h))*math.log(d) + K_factors
+            t.value = f"Total Loss = {loss:.3f} dB"
+
+            page.update()
+        
+        else:
+            objects = [frequency.current, distance.current, base_height.current, mobile_height.current]
+
+            for obj in objects:
+                if obj.value == "":
+                   obj.error_text = f"{obj.label} is not set"
+                else:
+                    obj.error_text = ""
+
+            page.update()
 
     page.title = "OKUMURATA-HATA"
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
@@ -91,6 +182,7 @@ def main(page):
                                                     keyboard_type="NUMBER",
                                                     suffix_text=" MHz",
                                                     text_align="RIGHT",
+                                                    error_text=""
                                                     # border=ft.InputBorder.UNDERLINE,
                                                     # filled=False,
                                                 ),
@@ -149,6 +241,7 @@ def main(page):
                                                     keyboard_type="NUMBER",
                                                     suffix_text=" Km",
                                                     text_align="RIGHT",
+                                                    error_text=""
                                                     # border=ft.InputBorder.UNDERLINE,
                                                     # filled=False,
                                                 ),
@@ -199,6 +292,7 @@ def main(page):
                                                     keyboard_type="NUMBER",
                                                     suffix_text=" m",
                                                     text_align="RIGHT",
+                                                    error_text=""
                                                     # border=ft.InputBorder.UNDERLINE,
                                                     # filled=False,
                                                 ),
@@ -250,6 +344,7 @@ def main(page):
                                                     keyboard_type="NUMBER",
                                                     suffix_text=" m",
                                                     text_align="RIGHT",
+                                                    error_text=""
                                                     # border=ft.InputBorder.UNDERLINE,
                                                     # filled=False,
                                                 ),
@@ -286,7 +381,7 @@ def main(page):
                                 )
                             ),
 
-                            t
+
                         ]
                     ),
                     ft.Column(
@@ -312,17 +407,18 @@ def main(page):
                                                 content=ft.Column(
                                                     [
                                                         ft.Checkbox(
-                                                label="K_al - Radial Streets", value=False),
+                                                
+                                                label="K_al - Radial Streets", value=False,ref=k_al,),
                                             ft.Checkbox(
-                                                label="K_ac - Circumferential Streets", value=False),
+                                                label="K_ac - Circumferential Streets", value=False,ref=k_ac,),
+                                            # ft.Checkbox(
+                                            #     label="K_sp - Medium Incline", value=False,ref=k_sp,),
                                             ft.Checkbox(
-                                                label="K_sp - Medium Incline", value=False),
+                                                label="K_th - Terrain Slope", value=False,ref=k_th,),
                                             ft.Checkbox(
-                                                label="K_th - Terrain Slope", value=False),
+                                                label="K_hp - Position on the Ondulation of the Terrain", value=False,ref=k_hp,),
                                             ft.Checkbox(
-                                                label="K_hp - Position on the Ondulation of the Terrain", value=False),
-                                            ft.Checkbox(
-                                                label="K_ih - Isolated Hill", value=False),
+                                                label="K_ih - Isolated Hill", value=False,ref=k_ih,),
                                                     ]
                                                 )
                                             ),
@@ -334,7 +430,7 @@ def main(page):
                                                     [
                                                         ft.Dropdown(
                                                 label="Area Type",
-                                                
+                                                ref = area_type,
                                                         options=[
                                                             ft.dropdown.Option(
                                                                 "Open Area"),
@@ -342,21 +438,19 @@ def main(page):
                                                                 "Semi-Open Area"),
                                                             ft.dropdown.Option(
                                                                 "Suburbs"),
-                                                            ft.dropdown.Option(
-                                                                "Unknown"),
+                                                            
                                                         ],
                                                     ),
                                             
                                             ft.Dropdown(
                                                 label="City Type",
-                                                
+                                                        ref =city_type,
                                                         options=[
                                                             ft.dropdown.Option(
                                                                 "Medium City"),
                                                             ft.dropdown.Option(
-                                                                "City Centers"),
-                                                            ft.dropdown.Option(
-                                                                "Unknown"),
+                                                                "City Center"),
+                                                            
                                                         
                                                         ],
                                                     ),
@@ -370,11 +464,13 @@ def main(page):
                                 )
                             )
                         ]
-                    )
+                    ),
+                    
                 ]
             )
 
-        )
+        ),
+        t
 
     )
 
