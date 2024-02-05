@@ -12,7 +12,8 @@ def main(page):
     t = ft.Text()
     frequency = ft.Ref[ft.TextField]()
     distance = ft.Ref[ft.TextField]()
-    height = ft.Ref[ft.TextField]()
+    mobile_height = ft.Ref[ft.TextField]()
+    base_height= ft.Ref[ft.TextField]()
 
     def calculate(e):
         print(frequency.current.value)
@@ -190,8 +191,59 @@ def main(page):
 
                                             ft.Container(
                                                 content=ft.TextField(
-                                                    ref=height,
-                                                    label="Height",
+                                                    ref=base_height,
+                                                    label="Base Station Height",
+                                                    hint_text="30 - 1000",
+                                                    input_filter=ft.InputFilter(
+                                                        allow=True, regex_string=r"[0-9.]", replacement_string=""),
+                                                    keyboard_type="NUMBER",
+                                                    suffix_text=" m",
+                                                    text_align="RIGHT",
+                                                    # border=ft.InputBorder.UNDERLINE,
+                                                    # filled=False,
+                                                ),
+
+                                                margin=5,
+                                                padding=10,
+                                                # alignment=ft.alignment.center_right,
+                                            )
+                                        ]
+
+                                    ),
+
+                                ),
+
+                            ),
+                            
+                             ft.Container(
+                                alignment=ft.alignment.center,
+                                margin=ft.margin.symmetric(horizontal=20),
+                                padding=ft.padding.symmetric(horizontal=15),
+
+                                content=ft.Card(
+
+                                    content=ft.Row(
+                                        expand=True,
+                                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+
+                                        controls=[
+
+                                            ft.Container(
+                                                content=ft.Text(
+                                                    "Hgt.",
+                                                    theme_style=ft.TextThemeStyle.HEADLINE_SMALL,
+                                                    weight=ft.FontWeight.BOLD,
+                                                    color=ft.colors.BLUE_200,
+                                                ),
+                                                margin=10,
+                                                padding=10,
+                                                alignment=ft.alignment.center,
+                                            ),
+
+                                            ft.Container(
+                                                content=ft.TextField(
+                                                    ref=mobile_height,
+                                                    label="Mobile Station Height",
                                                     hint_text="1 - 10 ",
                                                     input_filter=ft.InputFilter(
                                                         allow=True, regex_string=r"[0-9.]", replacement_string=""),
@@ -268,9 +320,9 @@ def main(page):
                                             ft.Checkbox(
                                                 label="K_th - Terrain Slope", value=False),
                                             ft.Checkbox(
-                                                label="Khp - Position on the undulation of the terrain", value=False),
+                                                label="K_hp - Position on the Ondulation of the Terrain", value=False),
                                             ft.Checkbox(
-                                                label="Kih - Isolated Hill", value=False),
+                                                label="K_ih - Isolated Hill", value=False),
                                                     ]
                                                 )
                                             ),
